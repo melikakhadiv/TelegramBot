@@ -21,12 +21,13 @@ public class TelegramScraper {
         driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
         List<WebElement> elements = driver.findElements(By.className("tgme_widget_message_text"));
         String lastMessage = elements.get(elements.size() - 1).getText().toString();
+//        List<WebElement> photos = driver.findElements(By.className("tgme_widget_message_photo_wrap"));
+//        Object photo = photos.get(photos.size() - 1);
         driver.quit();
         if (lastMessage != null){
             return lastMessage;
         }else {
             return " ";
         }
-
     }
 }
