@@ -22,8 +22,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.sql.rowset.RowSetWarning;
+import java.util.*;
 
 
 public class MyBot extends TelegramLongPollingBot {
@@ -53,7 +53,7 @@ public class MyBot extends TelegramLongPollingBot {
         System.out.println(userId);
         System.out.println(chatId);
 
-// if bot is an administrator for channel
+// if bot is an admin of channel
 //        Chat chat = new Chat();
 //        chat.setType("channel");
 //        chat.setUserName("+7oY0qilxCPEyMTQ0");
@@ -77,9 +77,6 @@ public class MyBot extends TelegramLongPollingBot {
                     System.out.println(chatId);
                     signUp(userName, userId, chatId, firstName, lastName);
                 } else {
-//                    sendMessage.setChatId(chatId);
-//                    sendMessage.setText(firstName + " welcome to my bot!");
-//                    execute(sendMessage);
                     sendMessage.setParseMode(ParseMode.MARKDOWN);
                     switch (command) {
                         case "/newchannelmessage":
@@ -110,6 +107,7 @@ public class MyBot extends TelegramLongPollingBot {
                             System.out.println("start");
                             sendMessage.setText("Welcome back " + firstName + " !\nThe bot is already stared!");
                             execute(sendMessage);
+                            System.out.println(ConfigManager.getKeys("TEST"));
                             break;
                         case "/restart":
                             System.out.println("restart");
@@ -128,7 +126,7 @@ public class MyBot extends TelegramLongPollingBot {
                 }
             }
             //todo: messbah.a check - method wont invoke
-            if (update.hasCallbackQuery()) {
+            else if (update.hasCallbackQuery()) {
                 System.out.println("call back data");
                 Message callBack = update.getCallbackQuery().getMessage();
                 CallbackQuery callbackQuery = update.getCallbackQuery();
@@ -195,44 +193,26 @@ public class MyBot extends TelegramLongPollingBot {
         sendMessage.setText("Choose the option:");
 
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-        int rowNumber = Integer.parseInt(ConfigManager.getKeys("MARKUP_ROW_NUMBER"));
-        int buttonNumber = Integer.parseInt(ConfigManager.getKeys("MARKUP_BUTTON_NUMBER"));
         keyboardMarkup.setOneTimeKeyboard(true);
         keyboardMarkup.setSelective(true);
         List<KeyboardRow> keyboard = new ArrayList<>();
-        KeyboardRow[] row = new KeyboardRow[rowNumber];
 
-        for (int i = 0; i < rowNumber; i++) {
+        String rowButtonString = ConfigManager.getKeys("KEYBOARD_BUTTON");
+        String[] values = rowButtonString.replaceAll("\\[|\\]", "").split(",\\s*");
+        List<Integer> rowButton = new ArrayList<>();
+        for (String value : values) {
+            rowButton.add(Integer.parseInt(value.trim()));
+        }
+        int rows = rowButton.get(0);
+        KeyboardRow[] row = new KeyboardRow[rows];
+
+        for (int i = 0; i < rows; i++) {
             row[i] = new KeyboardRow();
-            for (int j = 0; j < buttonNumber; j++) {
-                row[i].add(String.valueOf(j + 1));
+            for (int j = 0; j < rowButton.get(i + 1); j++) {
+                row[i].add((i + 1) + "_" + (j + 1));
             }
             keyboard.add(row[i]);
         }
-
-
-//        row.add("Row 1 Button 1");
-//        keyboard.add(row);
-//
-//        row = new KeyboardRow();
-//        row.add("Row 2 Button 1 ");
-//        row.add("Row 2 Button 2");
-//        keyboard.add(row);
-
-
-//        row = new KeyboardRow();
-//        row.add("Row 3 Button 1");
-//        row.add("Row 3 Button 2");
-//        row.add("Row 3 Button 3");
-//        keyboard.add(row);
-//
-//        row = new KeyboardRow();
-//        row.add("Row 4 Button 1");
-//        row.add("Row 4 Button 2");
-//        row.add("Row 4 Button 3");
-//        row.add("Row 4 Button 4");
-//        keyboard.add(row);
-
         keyboardMarkup.setKeyboard(keyboard);
         sendMessage.setReplyMarkup(keyboardMarkup);
         try {
@@ -246,35 +226,31 @@ public class MyBot extends TelegramLongPollingBot {
         sendMessage.setChatId(chatId);
         sendMessage.setText("Select your link:");
 
+        String rowButtonString = ConfigManager.getKeys("INLINE_KEYBOARD_BUTTON");
+        String[] values = rowButtonString.replaceAll("\\[|\\]", "").split(",\\s*");
+        List<Integer> rowButton = new ArrayList<>();
+        for (String value : values) {
+            rowButton.add(Integer.parseInt(value.trim()));
+        }
+        int rows = rowButton.get(0);
+
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
 
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        List<InlineKeyboardButton> button = new ArrayList<>();
 
-        int count = Integer.parseInt(ConfigManager.getKeys("INLINE_NUMBER"));
-        InlineKeyboardButton[] buttons = new InlineKeyboardButton[count];
-        for (int i = 0; i < count; i++) {
-            buttons[i] = new InlineKeyboardButton();
-            buttons[i].setText(String.valueOf(i + 1));
-            buttons[i].setCallbackData("button_" + (i + 1));
+        for (int i = 0; i < rows; i++) {
+            List<InlineKeyboardButton> rowButtons = new ArrayList<>();
+            InlineKeyboardButton[] buttons = new InlineKeyboardButton[rowButton.get(i + 1)];
+            for (int j = 0; j < rowButton.get(i + 1); j++) {
+                buttons[i] = new InlineKeyboardButton();
+                buttons[i].setText(String.valueOf((i + 1) + "_" + (j+1)));
+                buttons[i].setCallbackData("button_" + (i + 1));
 //            buttons[i].setUrl(ConfigManager.getKeys("URL_"+(i+1)));
-            button.add(buttons[i]);
+                rowButtons.add(buttons[i]);
+            }
+            keyboard.add(rowButtons);
         }
-
-//        InlineKeyboardButton button1 = new InlineKeyboardButton();
-//        button1.setText("Button 1");
-//        button1.setCallbackData("button1");
-//        button1.setUrl(ConfigManager.getKeys("URL_1"));
-//        button.add(button1);
-//
-//        InlineKeyboardButton button2 = new InlineKeyboardButton();
-//        button2.setText("Button 2");
-//        button2.setCallbackData("button2");
-//        button2.setUrl(ConfigManager.getKeys("URL_2"));
-//        Buttons.add(button2);
-
-        keyboard.add(button);
         inlineKeyboardMarkup.setKeyboard(keyboard);
 
         sendMessage.setReplyMarkup(inlineKeyboardMarkup);
